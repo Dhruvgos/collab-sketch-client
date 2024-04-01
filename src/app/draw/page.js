@@ -12,6 +12,7 @@ import { ComputePoints } from "@/utils/ComputePoints";
 import { drawGrid, drawOrEraseGrid } from "@/utils/GridLines";
 import { Scope_One } from "next/font/google";
 import { generateRandomString } from "@/utils/RoomnameGenerate";
+import { downloadImg } from "@/utils/DownloadImage";
 
 const Page = () => {
   const [color, setColor] = useColor("#561ecb");
@@ -25,7 +26,8 @@ const Page = () => {
   const [text, settext] = useState("");
   const [socketsByRoom, setSocketsByRoom] = useState([]);
   const [alreadyDrawed, setalreadyDrawed] = useState(false);
- const [dim, setdim] = useState({})
+  const [dim, setdim] = useState({});
+  const [nowWriting, setnowWriting] = useState(false)
   const { roomCreated, setRoomCreated, roomName, setRoomName, name, setName } =
     useRoomContext();
   const { canvasRef, clear, isDrawing } = UseDraw({
@@ -56,7 +58,6 @@ const Page = () => {
       setSocketsByRoom((prevSockets) => [...prevSockets, sid]);
     });
 
-
     newSocket.on("draw", (data) => {
       if (!ctx) return;
       redraw(data, ctx);
@@ -66,6 +67,17 @@ const Page = () => {
       if (!ctx) return;
       ctx.fillText(data.text, data.x, data.y);
     });
+
+    newSocket.on('rectangle',(data) => {
+      if(!ctx) return;
+      const img = new Image();
+        // ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        img.src = data.url;
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0);
+        };
+      ctx.strokeRect(data.x, data.y, data.width, data.height);
+    })
 
     newSocket.on("clear", clear);
 
@@ -77,6 +89,8 @@ const Page = () => {
       newSocket.off("draw");
       newSocket.off("clear");
       newSocket.off("write");
+      newSocket.off("rectangle");
+
     };
   }, [canvasRef]);
 
@@ -86,13 +100,13 @@ const Page = () => {
         if (!canvasRef.current?.toDataURL()) return;
 
         console.log(socketsByRoom);
-        console.log(rname)
+        console.log(rname);
         console.log("ye dekh to", canvasRef.current?.toDataURL()); ///i gues iska url white page se asccaiated hai
         console.log("sahi to hai r");
         socket.emit("canvas-state", {
           roomName: rname,
           url: canvasRef.current.toDataURL(),
-          socketsByRoom: socketsByRoom || []
+          socketsByRoom: socketsByRoom || [],
         });
       });
     }
@@ -100,7 +114,7 @@ const Page = () => {
     return () => {
       socket && socket.off("canvas-state");
     };
-  }, [ canvasRef, socket,socketsByRoom]);
+  }, [canvasRef, socket, socketsByRoom]);
 
   useEffect(() => {
     if (socket && roomJoined) {
@@ -128,7 +142,6 @@ const Page = () => {
     };
   }, [roomCreated, socket]);
 
-
   useEffect(() => {
     console.log(isDrawing);
     settext("");
@@ -155,8 +168,7 @@ const Page = () => {
         }
         const img = new Image();
         setalreadyDrawed(true);
-        ctx.clearRect(0, 0, canvasRef.current.
-          width, canvasRef.current.height);
+        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
         img.src = state;
         img.onload = () => {
           setCurrentCanvasState(state);
@@ -187,24 +199,39 @@ const Page = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-white">
+    <div className="min-h-screen flex flex-col justify-center items-center ">
+      {/* {yaha se change kiya bg color niche} */}
+
       <canvas
         tabIndex={0}
-        className="border border-black rounded-md"
+        className="border border-black rounded-md bg-gray-900"
         ref={canvasRef}
         height={window.innerHeight || 750}
         width={window.innerWidth || 1080}
-        style={{ cursor: isEraser ? "crosshair" : "default" }}
+        style={{
+          // cursor: (isEraser ? "crosshair" : "default") || (nowWriting ? "text" : "default")
+          cursor: (isEraser&&'crosshair') || (nowWriting&&'text') 
+        }}        
         onClick={handlePoints}
       />
       <div className="tools absolute top-4 left-4 flex flex-col gap-3 bg-gray-100 p-4 rounded-md">
         <div className="text-lg font-semibold">{`In room : ${roomName}`}</div>
         <div className="flex flex-col gap-2">
-          <label htmlFor="colorPicker" className="text-lg font-semibold">Color Picker:</label>
-          <ColorPicker hideInput id="colorPicker" height={200} color={color} onChange={setColor} />
+          <label htmlFor="colorPicker" className="text-lg font-semibold">
+            Color Picker:
+          </label>
+          <ColorPicker
+            hideInput
+            id="colorPicker"
+            height={100}
+            color={color}
+            onChange={setColor}
+          />
         </div>
         <div className="flex flex-col gap-2">
-          <label htmlFor="lineWidth" className="text-lg font-semibold">Line Width:</label>
+          <label htmlFor="lineWidth" className="text-lg font-semibold">
+            Line Width:
+          </label>
           <input
             type="range"
             id="lineWidth"
@@ -214,29 +241,52 @@ const Page = () => {
             onChange={(e) => setLineWidth(parseInt(e.target.value))}
           />
         </div>
-        <button className="border border-black rounded-md py-2 px-4 bg-gray-200 hover:bg-gray-300 transition-colors" onClick={handleClearCanvas}>
+        <button
+          className="border border-black rounded-md py-2 px-4 bg-gray-200 hover:bg-gray-300 transition-colors"
+          onClick={handleClearCanvas}
+        >
           Clear Canvas
         </button>
         <Link href="/">
-          <button onClick={leaveRoom} className="border border-black rounded-md py-2 px-4 bg-gray-200 hover:bg-gray-300 transition-colors">
+          <button
+            onClick={leaveRoom}
+            className="border border-black rounded-md py-2 px-4 bg-gray-200 hover:bg-gray-300 transition-colors"
+          >
             Leave Room
           </button>
         </Link>
         <button
-          className={`border border-black rounded-md py-2 px-4 bg-${isEraser ? 'red' : 'green'}-200 hover:bg-${isEraser ? 'red' : 'green'}-300 transition-colors`}
+          className={`border border-black rounded-md py-2 px-4 bg-${
+            isEraser ? "red" : "green"
+          }-200 hover:bg-${isEraser ? "red" : "green"}-300 transition-colors`}
           onClick={() => setIsEraser(!isEraser)}
         >
           {isEraser ? "Disable Eraser" : "Enable Eraser"}
         </button>
         <button
-          className={`border border-black rounded-md py-2 px-4 bg-${isRectangle ? 'red' : 'green'}-200 hover:bg-${isRectangle ? 'red' : 'green'}-300 transition-colors`}
+          className={`border border-black rounded-md py-2 px-4 bg-${
+            isRectangle ? "red" : "green"
+          }-200 hover:bg-${
+            isRectangle ? "red" : "green"
+          }-300 transition-colors`}
           onClick={() => setisRectangle(!isRectangle)}
         >
           {isRectangle ? "Disable Rect" : "Enable Rect"}
         </button>
+        {canvasRef.current && (
+          <button
+            onClick={() => downloadImg(canvasRef.current)}
+            className="border border-black rounded-md py-2 px-4"
+          >
+            Download
+          </button>
+        )}
+        <button onClick={()=>setnowWriting(prev=>!prev)} className="border border-black rounded-md py-2 px-4">
+          Text
+        </button>
       </div>
-      {isDrawing && (
-        <textarea
+      {nowWriting&&isDrawing && (
+        <textarea 
           onChange={(e) => settext(e.target.value)}
           autoFocus
           value={text}
@@ -249,8 +299,6 @@ const Page = () => {
       )}
     </div>
   );
-  
-  
 };
 
 export default Page;

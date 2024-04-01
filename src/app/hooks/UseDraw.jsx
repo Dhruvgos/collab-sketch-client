@@ -13,8 +13,10 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle }) => {
     const [image, setimage] = useState(null)
     const [action, setaction] = useState('')
     const [sp, setsp] = useState({})
+    const [isrect, setisrect] = useState(false)
     const [startDrag, setstartDrag] = useState(false)
     const { roomCreated, setRoomCreated, roomName, setRoomName, name, setName, } = useRoomContext()
+    var width,height;
     const clear = () => {
 
         const canvas = canvasRef.current
@@ -88,34 +90,36 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle }) => {
 
             if (isEraser) {
                 // Draw eraser
-                emitDrawData(socket, { prevX: prevPoints.x, prevY: prevPoints.y }, { currentX, currentY }, '#ffffff');
+                emitDrawData(socket, { prevX: prevPoints.x, prevY: prevPoints.y }, { currentX, currentY }, '#111827');
                 ctx.moveTo(prevPoints.x, prevPoints.y);
                 ctx.lineTo(currentX, currentY);
                 ctx.lineWidth = lineWidth;
-                ctx.strokeStyle = '#ffffff';
+                ctx.strokeStyle = '#111827';
                 ctx.stroke();
                 ctx.arc(currentX, currentY, lineWidth / 2.5, 0, 2 * Math.PI);
-                ctx.fillStyle = '#ffffff';
+                ctx.fillStyle = '#111827';
                 ctx.fill();
+                // drawGrid(ctx,20,'#dddddd')
                 // drawOrEraseGrid(ctx,20,'#dddddd',true,currentX,currentY)
 
             }
-            // else if (isRectangle) {
-            //     const startX = currentX; // Starting X coordinate of the rectangle
-            //     const startY = currentY; // Starting Y coordinate of the rectangle
-            //     console.log(startX,startY)
-            //     const width =currentX - sp.x   // Width of the rectangle
-            //     const height = currentY-sp.y  // Height of the rectangle
-
-            //     ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height); // Clear the canvas
-            //     if (image) {
-            //         // ctx.putImageData(image, 0, 0); // Restore previous canvas state
-            //     }
-            //     // ctx.beginPath(); // Begin a new path for drawing the rectangle
-            //     ctx.rect(startX, startY, width, height);
-            //     ctx.stroke();
-            //     setimage(ctx.getImageData(0, 0, canvas.width, canvas.height));
-            // }
+            else if (isRectangle) {
+                const startX = sp.x; // Starting X coordinate of the rectangle
+                const startY = sp.y; // Starting Y coordinate of the rectangle
+                console.log(startX,startY)
+                 width =currentX - sp.x   // Width of the rectangle
+                 height = currentY-sp.y  // Height of the rectangle
+                setisrect(true)
+                ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height); // Clear the canvas
+                if (image) {
+                    console.log(image)
+                    // emitRectData(socket,sp.x,sp.y,currentX,currentY,image)
+                    ctx.putImageData(image, 0, 0); // Restore previous canvas state
+                }
+                // ctx.beginPath(); // Begin a new path for drawing the rectangle
+                ctx.strokeRect(sp.x, sp.y, width, height);
+                // setimage(ctx.getImageData(0, 0, canvas.width, canvas.height));
+            }
             else {
                 // Draw lines
                 emitDrawData(socket, { prevX: prevPoints.x, prevY: prevPoints.y }, { currentX, currentY }, color.hex);
@@ -143,12 +147,20 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle }) => {
             }
         };
 
+        const emitRectData = (socket,x,y,width,height)=>{
+                if(socket){
+                    socket.emit('rectangle',{x,y,width,height,roomName,url:canvasRef.current.toDataURL()});
+                }
+        }
+
         const stopDraw = () => {
             shouldDraw.current = false;
-
+            const ctx = canvas.getContext('2d');
             // setimage(ctx.getImageData(0, 0, canvas.width, canvas.height));
-
+            setimage(ctx.getImageData(0, 0, canvas.width, canvas.height));
+            isrect&& emitRectData(socket,sp.x,sp.y,width,height);
             // setsp({})
+           setisrect(false)
             setstartDrag(false)
             // setaction('')
         };
@@ -187,7 +199,7 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle }) => {
                 // canvas.removeEventListener('mousemove',drawingRect)
             };
         }
-    }, [color, socket, roomName, isEraser, lineWidth, text, action, isRectangle, startDrag, image]); //isDrawing ht erha
+    }, [color, socket, roomName, isEraser, lineWidth, text, action, isRectangle, startDrag, image,isrect]); //isDrawing ht erha
 
     return {
         canvasRef, clear, isDrawing
