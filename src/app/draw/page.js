@@ -78,10 +78,18 @@ const Page = () => {
         };
       ctx.strokeRect(data.x, data.y, data.width, data.height);
     })
+    const handleResize = () => {
+      if (canvasRef.current) {
+        canvasRef.current.width = window.innerWidth;
+        canvasRef.current.height = window.innerHeight;
+      }
+    };
+    handleResize();
 
     newSocket.on("clear", clear);
-
+    window.addEventListener("resize", handleResize);
     return () => {
+      window.removeEventListener("resize", handleResize);
       newSocket.disconnect();
       newSocket.off("draw-line");
       newSocket.off("get-canvas-state");
@@ -93,6 +101,7 @@ const Page = () => {
 
     };
   }, [canvasRef]);
+  
 
   useEffect(() => {
     if (socket) {
@@ -206,8 +215,8 @@ const Page = () => {
         tabIndex={0}
         className="border border-black rounded-md bg-gray-900"
         ref={canvasRef}
-        height={window.innerHeight || 750}
-        width={window.innerWidth || 1080}
+        // height={window.innerHeight || 750}
+        // width={window.innerWidth || 1080}
         style={{
           // cursor: (isEraser ? "crosshair" : "default") || (nowWriting ? "text" : "default")
           cursor: (isEraser&&'crosshair') || (nowWriting&&'text') 
