@@ -1,6 +1,8 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { RoomProvider } from "@/context/RoomContext";
+import { DrawProvider } from "@/context/DrawContext";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
@@ -13,8 +15,9 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={inter.className}>
         <RoomProvider>
-        {children}
-
+          <DrawProvider>
+            {children}
+          </DrawProvider>
         </RoomProvider>
       </body>
     </html>

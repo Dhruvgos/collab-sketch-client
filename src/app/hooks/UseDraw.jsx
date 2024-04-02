@@ -6,16 +6,17 @@ import { emitDrawData } from '../page';
 import { useRoomContext } from '@/context/RoomContext';
 import { ComputePoints } from '@/utils/ComputePoints';
 import { drawGrid, drawOrEraseGrid } from '@/utils/GridLines';
+import { useDrawContext } from '@/context/DrawContext';
 const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle }) => {
     const canvasRef = useRef(null);
     const shouldDraw = useRef(false);
     const [isDrawing, setisDrawing] = useState(false)
-    const [image, setimage] = useState(null)
     const [action, setaction] = useState('')
     const [sp, setsp] = useState({})
     const [isrect, setisrect] = useState(false)
     const [startDrag, setstartDrag] = useState(false)
     const { roomCreated, setRoomCreated, roomName, setRoomName, name, setName, } = useRoomContext()
+    const {rectangles, setrectangles,image, setimage} = useDrawContext()
     var width,height;
     const clear = () => {
 
@@ -26,6 +27,7 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle }) => {
         if (!ctx) return
         // setimage(null)
         setimage(null)
+        setrectangles([])
         ctx.clearRect(0, 0, canvas.width, canvas.height)
         drawGrid(ctx, 20, '#dddddd')
     }
@@ -117,7 +119,14 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle }) => {
                     ctx.putImageData(image, 0, 0); // Restore previous canvas state
                 }
                 // ctx.beginPath(); // Begin a new path for drawing the rectangle
-                ctx.strokeRect(sp.x, sp.y, width, height);
+                ctx.strokeStyle = color.hex
+                // rectangles.forEach(rect => {
+                    ctx.strokeRect(sp.x, sp.y, width, height); // Draw each rectangle
+                // });
+                rectangles.forEach(rect => {
+                    ctx.strokeStyle = rect.color.hex;
+                    ctx.strokeRect(rect.x, rect.y, rect.width, rect.height); // Draw each rectangle
+                });
                 // setimage(ctx.getImageData(0, 0, canvas.width, canvas.height));
             }
             else {
@@ -149,7 +158,7 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle }) => {
 
         const emitRectData = (socket,x,y,width,height)=>{
                 if(socket){
-                    socket.emit('rectangle',{x,y,width,height,roomName,url:canvasRef.current.toDataURL()});
+                    socket.emit('rectangle',{x,y,width,height,roomName,url:canvasRef.current.toDataURL(),color:color});
                 }
         }
 
@@ -158,6 +167,10 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle }) => {
             const ctx = canvas.getContext('2d');
             // setimage(ctx.getImageData(0, 0, canvas.width, canvas.height));
             setimage(ctx.getImageData(0, 0, canvas.width, canvas.height));
+            setrectangles(prevRectangles => [
+                ...prevRectangles,
+                { x: sp.x, y: sp.y, width: width, height: height,color:color }
+            ]);
             isrect&& emitRectData(socket,sp.x,sp.y,width,height);
             // setsp({})
            setisrect(false)
@@ -183,6 +196,9 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle }) => {
             canvas.addEventListener('click', startWrite)
             canvas.addEventListener('mouseup', stopDraw);
             canvas.addEventListener('mouseout', stopDraw);
+            canvas.addEventListener('touchstart',startDraw)
+            canvas.addEventListener('touchmove', draw);
+            canvas.addEventListener('touchend', stopDraw);
             // canvas.addEventListener('mousedown',startRectangle)
             // canvas.addEventListener('mousemove',drawingRect)
 
@@ -194,12 +210,15 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle }) => {
                 canvas.removeEventListener('mouseup', stopDraw);
                 canvas.removeEventListener('mouseout', stopDraw);
                 canvas.removeEventListener('click', startWrite)
+                canvas.removeEventListener('touchstart',startDraw)
+                canvas.removeEventListener('touchmove', draw);
+                canvas.removeEventListener('touchend', stopDraw);
                 // socket.off('draw')
                 // canvas.removeEventListener('mousedown',startRectangle)
                 // canvas.removeEventListener('mousemove',drawingRect)
             };
         }
-    }, [color, socket, roomName, isEraser, lineWidth, text, action, isRectangle, startDrag, image,isrect]); //isDrawing ht erha
+    }, [color, socket, roomName, isEraser, lineWidth, text, action, isRectangle, rectangles,startDrag, image,isrect]); //isDrawing ht erha
 
     return {
         canvasRef, clear, isDrawing

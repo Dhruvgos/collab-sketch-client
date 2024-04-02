@@ -13,6 +13,7 @@ import { drawGrid, drawOrEraseGrid } from "@/utils/GridLines";
 import { Scope_One } from "next/font/google";
 import { generateRandomString } from "@/utils/RoomnameGenerate";
 import { downloadImg } from "@/utils/DownloadImage";
+import { useDrawContext } from "@/context/DrawContext";
 
 const Page = () => {
   const [color, setColor] = useColor("#561ecb");
@@ -27,7 +28,9 @@ const Page = () => {
   const [socketsByRoom, setSocketsByRoom] = useState([]);
   const [alreadyDrawed, setalreadyDrawed] = useState(false);
   const [dim, setdim] = useState({});
+  const {rectangles, setrectangles,image, setimage} = useDrawContext()
   const [nowWriting, setnowWriting] = useState(false)
+  
   const { roomCreated, setRoomCreated, roomName, setRoomName, name, setName } =
     useRoomContext();
   const { canvasRef, clear, isDrawing } = UseDraw({
@@ -41,8 +44,8 @@ const Page = () => {
   const { roomJoined, setRoomJoined } = useRoomContext();
 
   useEffect(() => {
-    // const newSocket = io("http://localhost:3001");
-    const newSocket = io("https://collab-sketch-server.onrender.com");
+    const newSocket = io("http://localhost:3001");
+    // const newSocket = io("https://collab-sketch-server.onrender.com");
     const ctx = canvasRef.current?.getContext("2d");
     const gridSize = 20;
     const gridColor = "#dddddd";
@@ -77,7 +80,16 @@ const Page = () => {
         img.onload = () => {
           ctx.drawImage(img, 0, 0);
         };
-      ctx.strokeRect(data.x, data.y, data.width, data.height);
+        setrectangles(prevRectangles => [
+          ...prevRectangles,
+          { x: data.x, y: data.y, width: data.width, height: data.height,color: data.color }
+      ]);
+      // ctx.strokeStyle = data.color
+      rectangles.forEach(rect => {
+        ctx.strokeStyle = rect.color.hex;
+        ctx.strokeRect(rect.x, rect.y, rect.width, rect.height); // Draw each rectangle
+      });
+      // setimage(ctx.getImageData(0, 0,  canvasRef.current.width, canvasRef.current.height));
     })
     const handleResize = () => {
       if (canvasRef.current) {
