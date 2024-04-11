@@ -24,13 +24,15 @@ const Page = () => {
   const [currentCanvasState, setCurrentCanvasState] = useState(null);
   const [id, setId] = useState("");
   const [isRectangle, setisRectangle] = useState(false);
+  const [isCircle, setisCircle] = useState(false);
   const [text, settext] = useState("");
   const [socketsByRoom, setSocketsByRoom] = useState([]);
   const [alreadyDrawed, setalreadyDrawed] = useState(false);
   const [dim, setdim] = useState({});
-  const {rectangles, setrectangles,image, setimage} = useDrawContext()
-  const [nowWriting, setnowWriting] = useState(false)
-  
+  const { rectangles, setrectangles, image, setimage, circles, setcircles } =
+    useDrawContext();
+  const [nowWriting, setnowWriting] = useState(false);
+
   const { roomCreated, setRoomCreated, roomName, setRoomName, name, setName } =
     useRoomContext();
   const { canvasRef, clear, isDrawing } = UseDraw({
@@ -40,12 +42,13 @@ const Page = () => {
     lineWidth,
     text,
     isRectangle,
+    isCircle,
   });
   const { roomJoined, setRoomJoined } = useRoomContext();
 
   useEffect(() => {
-    // const newSocket = io("http://localhost:3001");
-    const newSocket = io("https://collab-sketch-server.onrender.com");
+    const newSocket = io("http://localhost:3001");
+    // const newSocket = io("https://collab-sketch-server.onrender.com");
     const ctx = canvasRef.current?.getContext("2d");
     const gridSize = 20;
     const gridColor = "#dddddd";
@@ -72,25 +75,59 @@ const Page = () => {
       ctx.fillText(data.text, data.x, data.y);
     });
 
-    newSocket.on('rectangle',(data) => {
-      if(!ctx) return;
+    newSocket.on("rectangle", (data) => {
+      if (!ctx) return;
+      // if(image){
+      //   ctx.putImageData(image, 0, 0); 
+      // }
       const img = new Image();
-        // ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-        img.src = data.url;
-        img.onload = () => {
-          ctx.drawImage(img, 0, 0);
-        };
-        setrectangles(prevRectangles => [
-          ...prevRectangles,
-          { x: data.x, y: data.y, width: data.width, height: data.height,color: data.color }
+      // ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      img.src = data.url;
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0);
+      };
+      setrectangles((prevRectangles) => [
+        ...prevRectangles,
+        {
+          x: data.x,
+          y: data.y,
+          width: data.width,
+          height: data.height,
+          color: data.color,
+        },
       ]);
-      // ctx.strokeStyle = data.color
-      rectangles.forEach(rect => {
+
+      rectangles.forEach((rect) => {
         ctx.strokeStyle = rect.color.hex;
         ctx.strokeRect(rect.x, rect.y, rect.width, rect.height); // Draw each rectangle
       });
-      // setimage(ctx.getImageData(0, 0,  canvasRef.current.width, canvasRef.current.height));
-    })
+    });
+    newSocket.on("circle", (data) => {
+      if (!ctx) return;
+      const img = new Image();
+      // ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      img.src = data.url;
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0);
+      };
+      setcircles((prevCircles) => [
+        ...prevCircles,
+        {
+          x: data.x,
+          y: data.y,
+          radius: data.radius,
+          color: data.color,
+        },
+      ]);
+
+      circles.forEach((prevCircle) => {
+        console.log(prevCircle);
+        ctx.beginPath();
+        ctx.arc(prevCircle.x, prevCircle.y, prevCircle.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = prevCircle.color.hex;
+        ctx.stroke();
+      });
+    });
     const handleResize = () => {
       if (canvasRef.current) {
         canvasRef.current.width = window.innerWidth;
@@ -111,10 +148,8 @@ const Page = () => {
       newSocket.off("clear");
       newSocket.off("write");
       newSocket.off("rectangle");
-
     };
   }, [canvasRef]);
-  
 
   useEffect(() => {
     if (socket) {
@@ -226,14 +261,14 @@ const Page = () => {
 
       <canvas
         tabIndex={0}
-        className="border border-black rounded-md bg-gray-900"
+        className="border border-black rounded-md bg-gray-800"
         ref={canvasRef}
         // height={window.innerHeight || 750}
         // width={window.innerWidth || 1080}
         style={{
           // cursor: (isEraser ? "crosshair" : "default") || (nowWriting ? "text" : "default")
-          cursor: (isEraser&&'crosshair') || (nowWriting&&'text') 
-        }}        
+          cursor: (isEraser && "crosshair") || (nowWriting && "text"),
+        }}
         onClick={handlePoints}
       />
       <div className="tools absolute top-4 left-4 flex flex-col gap-3 bg-gray-100 p-4 rounded-md">
@@ -303,12 +338,21 @@ const Page = () => {
             Download
           </button>
         )}
-        <button onClick={()=>setnowWriting(prev=>!prev)} className="border border-black rounded-md py-2 px-4">
+        <button
+          onClick={() => setisCircle((prev) => !prev)}
+          className="border border-black rounded-md py-2 px-4"
+        >
+          Circle
+        </button>
+        <button
+          onClick={() => setnowWriting((prev) => !prev)}
+          className="border border-black rounded-md py-2 px-4"
+        >
           Text
         </button>
       </div>
-      {nowWriting&&isDrawing && (
-        <textarea 
+      {nowWriting && isDrawing && (
+        <textarea
           onChange={(e) => settext(e.target.value)}
           autoFocus
           value={text}
