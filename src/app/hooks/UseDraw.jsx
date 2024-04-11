@@ -31,11 +31,11 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle, isCirc
     }
     useEffect(() => {
         // console.log(roomName)
+        
         const prevPoints = { x: null, y: null };
         const getStartPoints = (e) => {
             console.log(startDrag)
             if (startDrag) return
-
             const startPoints = computePointsinCanvas(e);
             // setstartDrag(true)
             setsp(startPoints)
@@ -49,9 +49,11 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle, isCirc
            
             // setaction('drawing')  //yeh abhi add kiya hai
 
-            // setimage(image)
             prevPoints.y = currentPoints.y;
             const ctx = canvasRef.current?.getContext('2d');
+            // setimage(ctx.getImageData(0, 0, canvas.width, canvas.height));
+            // ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+
             // if(image){
             //     ctx.putImageData(image,0,0)
             // }
@@ -86,7 +88,7 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle, isCirc
                 socket.emit('write', { text, x, y, roomName });
             }
         }
-
+       
 
 
         // console.log(action)
@@ -236,11 +238,13 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle, isCirc
             canvas.addEventListener('mouseup', stopDraw);
             canvas.addEventListener('mouseout', stopDraw);
             canvas.addEventListener('touchstart', startDraw)
+            canvas.addEventListener('touchstart', getStartPoints)
             canvas.addEventListener('touchmove', draw);
+            canvas.addEventListener('touchend', stopDraw);
             canvas.addEventListener('touchend', stopDraw);
             // canvas.addEventListener('mousedown',startRectangle)
             // canvas.addEventListener('mousemove',drawingRect)
-
+            
             return () => {
                 canvas.removeEventListener('mousedown', getStartPoints)
                 canvas.removeEventListener('mousedown', startDraw);
@@ -250,16 +254,20 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle, isCirc
                 canvas.removeEventListener('mouseout', stopDraw);
                 canvas.removeEventListener('click', startWrite)
                 canvas.removeEventListener('touchstart', startDraw)
+                canvas.removeEventListener('touchstart', getStartPoints)
                 canvas.removeEventListener('touchmove', draw);
+                canvas.removeEventListener('touchend', stopDraw);
                 canvas.removeEventListener('touchend', stopDraw);
                 // socket.off('draw')
                 // canvas.removeEventListener('mousedown',startRectangle)
                 // canvas.removeEventListener('mousemove',drawingRect)
             };
+          
+            
+
         }
     }, [color, socket, roomName, isEraser, lineWidth, text, action, isRectangle, isCircle, rectangles,circles,isCirc ,startDrag, image, isrect]); //isDrawing ht erha
        
-        
     return {
         canvasRef, clear, isDrawing
     };

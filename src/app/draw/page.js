@@ -47,8 +47,8 @@ const Page = () => {
   const { roomJoined, setRoomJoined } = useRoomContext();
 
   useEffect(() => {
-    // const newSocket = io("http://localhost:3001");
-    const newSocket = io("https://collab-sketch-server.onrender.com");
+    const newSocket = io("http://localhost:3001");
+    // const newSocket = io("https://collab-sketch-server.onrender.com");
     const ctx = canvasRef.current?.getContext("2d");
     const gridSize = 20;
     const gridColor = "#dddddd";
@@ -67,6 +67,7 @@ const Page = () => {
 
     newSocket.on("draw", (data) => {
       if (!ctx) return;
+      setimage(ctx.getImageData(0, 0, canvasRef.current?.width, canvasRef.current?.height));
       redraw(data, ctx);
     });
 
@@ -77,11 +78,12 @@ const Page = () => {
 
     newSocket.on("rectangle", (data) => {
       if (!ctx) return;
-      // if(image){
-      //   ctx.putImageData(image, 0, 0); 
-      // }
+      if(image){  // yaha se
+        ctx.putImageData(image, 0, 0); 
+      }
+      setimage(ctx.getImageData(0, 0, canvasRef.current?.width, canvasRef.current?.height));  // yaha tk add kiya
       const img = new Image();
-      // ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
       img.src = data.url;
       img.onload = () => {
         ctx.drawImage(img, 0, 0);
@@ -96,16 +98,21 @@ const Page = () => {
           color: data.color,
         },
       ]);
-
+      
       rectangles.forEach((rect) => {
         ctx.strokeStyle = rect.color.hex;
         ctx.strokeRect(rect.x, rect.y, rect.width, rect.height); // Draw each rectangle
       });
+      // setimage(ctx.getImageData(0, 0, canvasRef.current?.width, canvasRef.current?.height));  // yaha tk add kiya
     });
     newSocket.on("circle", (data) => {
       if (!ctx) return;
       const img = new Image();
-      // ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      if(image){
+        ctx.putImageData(image, 0, 0); 
+      }
+      setimage(ctx.getImageData(0, 0, canvasRef.current?.width, canvasRef.current?.height));
+      ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
       img.src = data.url;
       img.onload = () => {
         ctx.drawImage(img, 0, 0);
@@ -119,7 +126,7 @@ const Page = () => {
           color: data.color,
         },
       ]);
-
+      
       circles.forEach((prevCircle) => {
         console.log(prevCircle);
         ctx.beginPath();
@@ -127,6 +134,8 @@ const Page = () => {
         ctx.strokeStyle = prevCircle.color.hex;
         ctx.stroke();
       });
+      // setimage(ctx.getImageData(0, 0, canvasRef.current?.width, canvasRef.current?.height));
+      // setimage(ctx.getImageData(0, 0, canvasRef.current?.width, canvasRef.current?.height));  // yaha tk add kiya
     });
     const handleResize = () => {
       if (canvasRef.current) {
