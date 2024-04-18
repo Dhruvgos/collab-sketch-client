@@ -135,6 +135,12 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle, isCirc
                     ctx.strokeStyle = rect.color.hex;
                     ctx.strokeRect(rect.x, rect.y, rect.width, rect.height); // Draw each rectangle
                 });
+                circles.forEach(circle=>{
+                    ctx.beginPath();
+                    ctx.arc(circle.x,circle.y,circle.radius,0,Math.PI*2)
+                    ctx.strokeStyle = circle.color.hex;
+                    ctx.stroke(); // Stroke the circle
+                })
                 // setimage(ctx.getImageData(0, 0, canvas.width, canvas.height));
             }
             else if (isCircle) {
@@ -156,6 +162,10 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle, isCirc
                     ctx.strokeStyle = circle.color.hex;
                     ctx.stroke(); // Stroke the circle
                 })
+                rectangles.forEach(rect => {
+                    ctx.strokeStyle = rect.color.hex;
+                    ctx.strokeRect(rect.x, rect.y, rect.width, rect.height); // Draw each rectangle
+                });
             }
             else {
                 // Draw lines
