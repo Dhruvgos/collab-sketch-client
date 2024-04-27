@@ -47,8 +47,8 @@ const Page = () => {
   const { roomJoined, setRoomJoined } = useRoomContext();
 
   useEffect(() => {
-    // const newSocket = io("http://localhost:3001");
-    const newSocket = io("https://collab-sketch-server.onrender.com");
+    const newSocket = io("http://localhost:3001");
+    // const newSocket = io("https://collab-sketch-server.onrender.com");
     const ctx = canvasRef.current?.getContext("2d");
     const gridSize = 20;
     const gridColor = "#dddddd";
@@ -98,11 +98,13 @@ const Page = () => {
         )
       ); // yaha tk add kiya
       const img = new Image();
-      ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      // ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
       img.src = data.url;
-      img.onload = () => {
-        ctx.drawImage(img, 0, 0);
-      };
+      // img.onload = () => {
+      //   ctx.drawImage(img, 0, 0);
+      // };
+      ctx.strokeStyle = data.color.hex
+      ctx.strokeRect(data.x, data.y, data.width, data.height); // added this remove up 3
       setrectangles((prevRectangles) => [
         ...prevRectangles,
         {
@@ -134,11 +136,15 @@ const Page = () => {
           canvasRef.current?.height
         )
       );
-      ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-      img.src = data.url;
-      img.onload = () => {
-        ctx.drawImage(img, 0, 0);
-      };
+      // ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      // img.src = data.url;
+      // img.onload = () => {
+        //   ctx.drawImage(img, 0, 0);
+        // };
+        ctx.beginPath();
+      ctx.arc(data.x, data.y, data.radius, 0, Math.PI * 2); // Full circle
+      ctx.strokeStyle = data.color.hex; // Stroke color
+      ctx.stroke(); // Stroke the circle
       setcircles((prevCircles) => [
         ...prevCircles,
         {
