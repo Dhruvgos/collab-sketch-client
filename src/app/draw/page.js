@@ -10,17 +10,17 @@ import { useRoomContext } from "@/context/RoomContext";
 import Link from "next/link";
 import { ComputePoints } from "@/utils/ComputePoints";
 import { drawGrid, drawOrEraseGrid } from "@/utils/GridLines";
-import { Scope_One } from "next/font/google";
 import { generateRandomString } from "@/utils/RoomnameGenerate";
 import { downloadImg } from "@/utils/DownloadImage";
 import { useDrawContext } from "@/context/DrawContext";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const Page = () => {
   const [color, setColor] = useColor("#561ecb");
   const [socket, setSocket] = useState(null);
   const [isEraser, setIsEraser] = useState(false);
   const [points, setpoints] = useState({});
-  const [lineWidth, setLineWidth] = useState(5);
+  const [lineWidth, setLineWidth] = useState(3);
   const [currentCanvasState, setCurrentCanvasState] = useState(null);
   const [id, setId] = useState("");
   const [isRectangle, setisRectangle] = useState(false);
@@ -47,8 +47,8 @@ const Page = () => {
   const { roomJoined, setRoomJoined } = useRoomContext();
 
   useEffect(() => {
-    // const newSocket = io("http://localhost:3001");
-    const newSocket = io("https://collab-sketch-server.onrender.com");
+    const newSocket = io("http://localhost:3001");
+    // const newSocket = io("https://collab-sketch-server.onrender.com");
     const ctx = canvasRef.current?.getContext("2d");
     const gridSize = 20;
     const gridColor = "#dddddd";
@@ -67,7 +67,14 @@ const Page = () => {
 
     newSocket.on("draw", (data) => {
       if (!ctx) return;
-      setimage(ctx.getImageData(0, 0, canvasRef.current?.width, canvasRef.current?.height));
+      setimage(
+        ctx.getImageData(
+          0,
+          0,
+          canvasRef.current?.width,
+          canvasRef.current?.height
+        )
+      );
       redraw(data, ctx);
     });
 
@@ -78,10 +85,18 @@ const Page = () => {
 
     newSocket.on("rectangle", (data) => {
       if (!ctx) return;
-      if(image){  // yaha se
-        ctx.putImageData(image, 0, 0); 
+      if (image) {
+        // yaha se
+        ctx.putImageData(image, 0, 0);
       }
-      setimage(ctx.getImageData(0, 0, canvasRef.current?.width, canvasRef.current?.height));  // yaha tk add kiya
+      setimage(
+        ctx.getImageData(
+          0,
+          0,
+          canvasRef.current?.width,
+          canvasRef.current?.height
+        )
+      ); // yaha tk add kiya
       const img = new Image();
       ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
       img.src = data.url;
@@ -98,7 +113,7 @@ const Page = () => {
           color: data.color,
         },
       ]);
-      
+
       rectangles.forEach((rect) => {
         ctx.strokeStyle = rect.color.hex;
         ctx.strokeRect(rect.x, rect.y, rect.width, rect.height); // Draw each rectangle
@@ -108,10 +123,17 @@ const Page = () => {
     newSocket.on("circle", (data) => {
       if (!ctx) return;
       const img = new Image();
-      if(image){
-        ctx.putImageData(image, 0, 0); 
+      if (image) {
+        ctx.putImageData(image, 0, 0);
       }
-      setimage(ctx.getImageData(0, 0, canvasRef.current?.width, canvasRef.current?.height));
+      setimage(
+        ctx.getImageData(
+          0,
+          0,
+          canvasRef.current?.width,
+          canvasRef.current?.height
+        )
+      );
       ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
       img.src = data.url;
       img.onload = () => {
@@ -126,7 +148,7 @@ const Page = () => {
           color: data.color,
         },
       ]);
-      
+
       circles.forEach((prevCircle) => {
         console.log(prevCircle);
         ctx.beginPath();
@@ -265,40 +287,49 @@ const Page = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center ">
-      {/* {yaha se change kiya bg color niche} */}
-
-      <canvas
-        tabIndex={0}
-        className="border border-black rounded-md bg-gray-800"
-        ref={canvasRef}
-        // height={window.innerHeight || 750}
-        // width={window.innerWidth || 1080}
-        style={{
-          // cursor: (isEraser ? "crosshair" : "default") || (nowWriting ? "text" : "default")
-          cursor: (isEraser && "crosshair") || (nowWriting && "text"),
-        }}
-        onClick={handlePoints}
-      />
-      <div className="tools absolute top-4 left-4 flex flex-col gap-3 bg-gray-100 p-4 rounded-md">
-        <div className="text-lg font-semibold">{`In room : ${roomName}`}</div>
-        <div className="flex flex-col gap-2">
-          <label htmlFor="colorPicker" className="text-lg font-semibold">
-            Color Picker:
-          </label>
+    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-200">
+      <div className="relative">
+        <canvas
+          tabIndex={0}
+          className="border border-black rounded-md  bg-background"
+          ref={canvasRef}
+          style={{
+            cursor: (isEraser && "crosshair") || (nowWriting && "text"),
+          }}
+          onClick={handlePoints}
+        />
+        {nowWriting && isDrawing && (
+          <textarea
+            onChange={(e) => settext(e.target.value)}
+            autoFocus
+            value={text}
+            className="absolute bg-white p-2 border border-gray-300 rounded-md"
+            style={{
+              top: points.y,
+              left: points.x,
+            }}
+          />
+        )}
+      </div>
+      <div className="tools absolute top-4 left-4 flex flex-col gap-4 bg-toolBg p-4 rounded-md">
+        <div className=" text-md text-white font-semibold">{`Room : ${roomName}`}</div>
+        <div className="flex flex-col gap-2 w-32">
           <ColorPicker
+         
             hideInput
+            hideAlpha
             id="colorPicker"
-            height={100}
+            height={80}
             color={color}
             onChange={setColor}
           />
         </div>
-        <div className="flex flex-col gap-2">
-          <label htmlFor="lineWidth" className="text-lg font-semibold">
-            Line Width:
-          </label>
+        <div className="flex flex-col text-white gap-2">
+          {/* <label htmlFor="lineWidth" className="text-lg font-semibold">
+            {/* Line Width: */}
+          {/* </label> */} 
           <input
+          className="h-8 w-32"
             type="range"
             id="lineWidth"
             min="1"
@@ -307,71 +338,140 @@ const Page = () => {
             onChange={(e) => setLineWidth(parseInt(e.target.value))}
           />
         </div>
-        <button
-          className="border border-black rounded-md py-2 px-4 bg-gray-200 hover:bg-gray-300 transition-colors"
-          onClick={handleClearCanvas}
-        >
-          Clear Canvas
-        </button>
-        <Link href="/">
-          <button
-            onClick={leaveRoom}
-            className="border border-black rounded-md py-2 px-4 bg-gray-200 hover:bg-gray-300 transition-colors"
-          >
-            Leave Room
-          </button>
-        </Link>
-        <button
-          className={`border border-black rounded-md py-2 px-4 bg-${
-            isEraser ? "red" : "green"
-          }-200 hover:bg-${isEraser ? "red" : "green"}-300 transition-colors`}
-          onClick={() => setIsEraser(!isEraser)}
-        >
-          {isEraser ? "Disable Eraser" : "Enable Eraser"}
-        </button>
-        <button
-          className={`border border-black rounded-md py-2 px-4 bg-${
-            isRectangle ? "red" : "green"
-          }-200 hover:bg-${
-            isRectangle ? "red" : "green"
-          }-300 transition-colors`}
-          onClick={() => setisRectangle(!isRectangle)}
-        >
-          {isRectangle ? "Disable Rect" : "Enable Rect"}
-        </button>
-        {canvasRef.current && (
-          <button
-            onClick={() => downloadImg(canvasRef.current)}
-            className="border border-black rounded-md py-2 px-4"
-          >
-            Download
-          </button>
-        )}
-        <button
-          onClick={() => setisCircle((prev) => !prev)}
-          className="border border-black rounded-md py-2 px-4"
-        >
-          Circle
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <div className="flex-1">
+            <button
+              className={`btn text-white btn-clear`}
+              onClick={handleClearCanvas}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                height="24px"
+                viewBox="0 -960 960 960"
+                width="24px"
+                fill="#e8eaed"
+              >
+                <path d="M440-520h80v-280q0-17-11.5-28.5T480-840q-17 0-28.5 11.5T440-800v280ZM200-360h560v-80H200v80Zm-58 240h98v-80q0-17 11.5-28.5T280-240q17 0 28.5 11.5T320-200v80h120v-80q0-17 11.5-28.5T480-240q17 0 28.5 11.5T520-200v80h120v-80q0-17 11.5-28.5T680-240q17 0 28.5 11.5T720-200v80h98l-40-160H182l-40 160Zm676 80H142q-39 0-63-31t-14-69l55-220v-80q0-33 23.5-56.5T200-520h160v-280q0-50 35-85t85-35q50 0 85 35t35 85v280h160q33 0 56.5 23.5T840-440v80l55 220q13 38-11.5 69T818-40Zm-58-400H200h560Zm-240-80h-80 80Z" />
+              </svg>
+            </button>
+          </div>
+          <div className="flex-1">
+            <Link href="/">
+              <button
+                onClick={leaveRoom}
+                className={`btn text-white btn-leave`}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="24px"
+                  viewBox="0 -960 960 960"
+                  width="24px"
+                  fill="#e8eaed"
+                >
+                  <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z" />
+                </svg>
+              </button>
+            </Link>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+  <div className="flex-1">
+    <button
+      className={`btn text-white btn-eraser bg-${
+        isEraser ? "red" : "green"
+      }-200 hover:bg-${isEraser ? "red" : "green"}-300 ${
+        isEraser ? "border-2 border-gray-500" : ""
+      }`}
+      onClick={() => setIsEraser(!isEraser)}
+    >
+      {/* {isEraser ? "Disable Eraser" : "Enable Eraser"} */}
+
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        height="24px"
+        viewBox="0 -960 960 960"
+        width="24px"
+        fill="#e8eaed"
+      >
+        <path d="M690-240h190v80H610l80-80Zm-500 80-85-85q-23-23-23.5-57t22.5-58l440-456q23-24 56.5-24t56.5 23l199 199q23 23 23 57t-23 57L520-160H190Zm296-80 314-322-198-198-442 456 64 64h262Zm-6-240Z" />
+      </svg>
+    </button>
+  </div>
+  <div className="flex-1">
+    <button
+      className={`btn text-white btn-rect bg-${
+        isRectangle ? "red" : "green"
+      }-200 hover:bg-${isRectangle ? "red" : "green"}-300 ${
+        isRectangle ? "border-2 border-gray-500" : ""
+      }`}
+      onClick={() => setisRectangle(!isRectangle)}
+    >
+      {/* {isRectangle ? "Disable Rect" : "Enable Rect"} */}
+
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        height="24px"
+        viewBox="0 -960 960 960"
+        width="24px"
+        fill="#e8eaed"
+      >
+        <path d="M80-160v-640h800v640H80Zm80-80h640v-480H160v480Zm0 0v-480 480Z" />
+      </svg>
+    </button>
+  </div>
+</div>
+
+        <div className="flex flex-wrap gap-2">
+          <div className="flex-1">
+            {canvasRef.current && (
+              <button
+                onClick={() => downloadImg(canvasRef.current)}
+                className="btn text-white btn-download"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="24px"
+                  viewBox="0 -960 960 960"
+                  width="24px"
+                  fill="#e8eaed"
+                >
+                  <path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z" />
+                </svg>
+              </button>
+            )}
+              </div>
+            <div className="flex-1">
+            <button
+              onClick={() => setisCircle((prev) => !prev)}
+              className="btn text-white"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                height="24px"
+                viewBox="0 -960 960 960"
+                width="24px"
+                fill="#e8eaed"
+              >
+                <path d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
         <button
           onClick={() => setnowWriting((prev) => !prev)}
-          className="border border-black rounded-md py-2 px-4"
+          className="btn text-white"
         >
-          Text
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="24px"
+            viewBox="0 -960 960 960"
+            width="24px"
+            fill="#e8eaed"
+          >
+            <path d="M420-160v-520H200v-120h560v120H540v520H420Z" />
+          </svg>
         </button>
       </div>
-      {nowWriting && isDrawing && (
-        <textarea
-          onChange={(e) => settext(e.target.value)}
-          autoFocus
-          value={text}
-          className="absolute bg-white p-2 border border-gray-300 rounded-md"
-          style={{
-            top: points.y,
-            left: points.x,
-          }}
-        />
-      )}
     </div>
   );
 };

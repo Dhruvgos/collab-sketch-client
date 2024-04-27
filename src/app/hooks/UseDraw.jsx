@@ -76,11 +76,10 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle, isCirc
                 const ctx = canvasRef.current?.getContext('2d');
                 const currentPoints = computePointsinCanvas(e);
                 ctx.font = "30px Arial"
-                // console.log(text)
-                // ctx.fillText(text,currentPoints.x,currentPoints.y)
                 emitWriteData(text, currentPoints.x, currentPoints.y, socket);
                 setaction('');
                 setisDrawing(false);
+                // setimage(ctx.getImageData(0, 0, canvas.width, canvas.height));
             }
         }
         const emitWriteData = (text, x, y, socket) => {
@@ -107,10 +106,10 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle, isCirc
                 ctx.moveTo(prevPoints.x, prevPoints.y);
                 ctx.lineTo(currentX, currentY);
                 ctx.lineWidth = lineWidth;
-                ctx.strokeStyle = '#111827';
+                ctx.strokeStyle = '#1b1e1c';
                 ctx.stroke();
                 ctx.arc(currentX, currentY, lineWidth / 2.5, 0, 2 * Math.PI);
-                ctx.fillStyle = '#111827';
+                ctx.fillStyle = '#1b1e1c';
                 ctx.fill();
         }
             else if (isRectangle) {
