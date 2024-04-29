@@ -48,8 +48,8 @@ const Page = () => {
   const { roomJoined, setRoomJoined } = useRoomContext();
 
   useEffect(() => {
-    const newSocket = io("http://localhost:3001");
-    // const newSocket = io("https://collab-sketch-server.onrender.com");
+    // const newSocket = io("http://localhost:3001");
+    const newSocket = io("https://collab-sketch-server.onrender.com");
     const ctx = canvasRef.current?.getContext("2d");
     const gridSize = 20;
     const gridColor = "#dddddd";
