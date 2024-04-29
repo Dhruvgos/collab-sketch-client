@@ -14,6 +14,7 @@ import { generateRandomString } from "@/utils/RoomnameGenerate";
 import { downloadImg } from "@/utils/DownloadImage";
 import { useDrawContext } from "@/context/DrawContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Chat from "../Chat";
 
 const Page = () => {
   const [color, setColor] = useColor("#561ecb");
@@ -295,6 +296,9 @@ const Page = () => {
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-gray-200">
       <div className="relative">
+      <div className="absolute bottom-4 left-4">
+        <Chat/>
+      </div>
         <canvas
           tabIndex={0}
           className="border border-black rounded-md  bg-background"
@@ -477,7 +481,9 @@ const Page = () => {
             <path d="M420-160v-520H200v-120h560v120H540v520H420Z" />
           </svg>
         </button>
+   
       </div>
+    
     </div>
   );
 };

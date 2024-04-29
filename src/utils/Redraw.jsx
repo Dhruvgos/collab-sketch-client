@@ -1,7 +1,7 @@
 export const redraw = (data,ctx)=>{
     // const ctx = canvasRef.current?.getContext('2d');
     if(!ctx) return 
-    ctx.beginPath()
+    ctx.beginPath()   
     ctx.moveTo(data.prevPoint.prevX,data.prevPoint.prevY)
     ctx.lineTo(data.currentPoint.currentX,data.currentPoint.currentY)
     ctx.lineWidth = data.lineWidth; 

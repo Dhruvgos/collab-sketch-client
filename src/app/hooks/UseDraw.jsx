@@ -51,6 +51,8 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle, isCirc
 
             prevPoints.y = currentPoints.y;
             const ctx = canvasRef.current?.getContext('2d');
+            ctx.beginPath();
+            ctx.moveTo(prevPoints.x, prevPoints.y); // yeh do line dali hai yeh or upr wali
             // setimage(ctx.getImageData(0, 0, canvas.width, canvas.height));
             // ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 
@@ -94,6 +96,7 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle, isCirc
         const draw = (e) => {
             const ctx = canvasRef.current?.getContext('2d');
             if (!shouldDraw.current || !ctx) return;
+            // if(prevPoints.x==null||prevPoints.y==null) return
             const currentPoints = computePointsinCanvas(e);
             const currentX = currentPoints.x;
             const currentY = currentPoints.y;
@@ -168,7 +171,7 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle, isCirc
             }
             else {
                 // Draw lines
-                emitDrawData(socket, { prevX: prevPoints.x, prevY: prevPoints.y }, { currentX, currentY }, color.hex);
+                // emitDrawData(socket, { prevX: prevPoints.x, prevY: prevPoints.y }, { currentX, currentY }, color.hex);
                 ctx.moveTo(prevPoints.x, prevPoints.y);
                 ctx.lineTo(currentX, currentY);
                 ctx.lineWidth = lineWidth;
@@ -177,6 +180,7 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle, isCirc
                 ctx.arc(currentX, currentY, lineWidth / 2.5, 0, 2 * Math.PI);
                 ctx.fillStyle = color.hex;
                 ctx.fill();
+                emitDrawData(socket, { prevX: prevPoints.x, prevY: prevPoints.y }, { currentX, currentY }, color.hex);
 
             }
 
