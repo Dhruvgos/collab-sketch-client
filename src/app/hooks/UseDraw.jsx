@@ -47,12 +47,11 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle, isCirc
             const currentPoints = computePointsinCanvas(e);
             prevPoints.x = currentPoints.x;
            
-            // setaction('drawing')  //yeh abhi add kiya hai
-
+            // setaction('drawing')  //yeh abhi add kiya ha
             prevPoints.y = currentPoints.y;
             const ctx = canvasRef.current?.getContext('2d');
             ctx.beginPath();
-            ctx.moveTo(prevPoints.x, prevPoints.y); // yeh do line dali hai yeh or upr wali
+            ctx.moveTo(currentPoints.x, currentPoints.y); // yeh do line dali hai yeh or upr wali
             // setimage(ctx.getImageData(0, 0, canvas.width, canvas.height));
             // ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 
@@ -172,7 +171,9 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle, isCirc
             else {
                 // Draw lines
                 // emitDrawData(socket, { prevX: prevPoints.x, prevY: prevPoints.y }, { currentX, currentY }, color.hex);
+                console.log("dekh bhai yeh hai : ",prevPoints)
                 ctx.moveTo(prevPoints.x, prevPoints.y);
+                console.log("dekh bhai yeh hai : ",currentX,currentY,currentPoints)
                 ctx.lineTo(currentX, currentY);
                 ctx.lineWidth = lineWidth;
                 ctx.strokeStyle = color.hex;
