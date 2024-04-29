@@ -171,18 +171,21 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle, isCirc
             else {
                 // Draw lines
                 // emitDrawData(socket, { prevX: prevPoints.x, prevY: prevPoints.y }, { currentX, currentY }, color.hex);
-                console.log("dekh bhai yeh hai : ",prevPoints)
-                ctx.moveTo(prevPoints.x, prevPoints.y);
-                console.log("dekh bhai yeh hai : ",currentX,currentY,currentPoints)
-                ctx.lineTo(currentX, currentY);
-                ctx.lineWidth = lineWidth;
-                ctx.strokeStyle = color.hex;
-                ctx.stroke();
-                ctx.arc(currentX, currentY, lineWidth / 2.5, 0, 2 * Math.PI);
-                ctx.fillStyle = color.hex;
-                ctx.fill();
-                emitDrawData(socket, { prevX: prevPoints.x, prevY: prevPoints.y }, { currentX, currentY }, color.hex);
+                if(prevPoints.x!=null || prevPoints.y!=null){
 
+                    console.log("dekh bhai yeh hai : ",prevPoints)
+                    ctx.moveTo(prevPoints.x, prevPoints.y);
+                    console.log("dekh bhai yeh hai : ",currentX,currentY,currentPoints)
+                    ctx.lineTo(currentX, currentY);
+                    ctx.lineWidth = lineWidth;
+                    ctx.strokeStyle = color.hex;
+                    ctx.stroke();
+                    ctx.arc(currentX, currentY, lineWidth / 2.5, 0, 2 * Math.PI);
+                    ctx.fillStyle = color.hex;
+                    ctx.fill();
+                    emitDrawData(socket, { prevX: prevPoints.x, prevY: prevPoints.y }, { currentX, currentY }, color.hex);
+                    
+                }
             }
 
             prevPoints.x = currentX;
