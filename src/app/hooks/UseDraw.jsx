@@ -14,6 +14,10 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle, isCirc
     const [startDrag, setstartDrag] = useState(false)
     const { roomCreated, setRoomCreated, roomName, setRoomName, name, setName, } = useRoomContext()
     const { rectangles, setrectangles, image, setimage ,circles, setcircles} = useDrawContext()
+
+
+// Now you can use startX and startY instead of directly accessing sp.x and sp.y
+
     var width, height,radius;
     const clear = () => {
 
@@ -104,7 +108,7 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle, isCirc
 
             if (isEraser) {
                 // Draw eraser
-                emitDrawData(socket, { prevX: prevPoints.x, prevY: prevPoints.y }, { currentX, currentY }, '#111827');
+                emitDrawData(socket, { prevX: prevPoints.x, prevY: prevPoints.y }, { currentX, currentY }, '#1b1e1c');
                 ctx.moveTo(prevPoints.x, prevPoints.y);
                 ctx.lineTo(currentX, currentY);
                 ctx.lineWidth = lineWidth;
@@ -115,39 +119,43 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle, isCirc
                 ctx.fill();
         }
             else if (isRectangle) {
-                const startX = sp.x; // Starting X coordinate of the rectangle
-                const startY = sp.y; // Starting Y coordinate of the rectangle
-                console.log(startX, startY)
-                width = currentX - sp.x   // Width of the rectangle
-                height = currentY - sp.y  // Height of the rectangle
-                setisrect(true)
-                ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height); // Clear the canvas
-                if (image) {
-                    // console.log(image)
-                    // emitRectData(socket,sp.x,sp.y,currentX,currentY,image)
-                    ctx.putImageData(image, 0, 0); // Restore previous canvas state
-                }
-                // ctx.beginPath(); // Begin a new path for drawing the rectangle
-                ctx.strokeStyle = color.hex
-                // rectangles.forEach(rect => {
-                ctx.strokeRect(sp.x, sp.y, width, height); // Draw each rectangle
-                // });
-                rectangles.forEach(rect => {
-                    ctx.strokeStyle = rect.color.hex;
-                    ctx.strokeRect(rect.x, rect.y, rect.width, rect.height); // Draw each rectangle
-                });
-                circles.forEach(circle=>{
-                    ctx.beginPath();
-                    ctx.arc(circle.x,circle.y,circle.radius,0,Math.PI*2)
-                    ctx.strokeStyle = circle.color.hex;
-                    ctx.stroke(); // Stroke the circle
-                })
-                // setimage(ctx.getImageData(0, 0, canvas.width, canvas.height));
+                const startX = sp.x
+                 // Starting X coordinate of the rectangle
+                const startY = sp.y  // Starting Y coordinate of the rectangle
+                        console.log(startX, startY,{sp})
+                        width = currentX - startX   // Width of the rectangle
+                        height = currentY - startY  // Height of the rectangle
+                        console.log("widht",width,height)
+                        setisrect(true)
+                        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height); // Clear the canvas
+                        if (image) {
+                            // console.log(image)
+                            // emitRectData(socket,sp.x,sp.y,currentX,currentY,image)
+                            ctx.putImageData(image, 0, 0); // Restore previous canvas state
+                        }
+                        // ctx.beginPath(); // Begin a new path for drawing the rectangle
+                        ctx.strokeStyle = color.hex
+                        // rectangles.forEach(rect => {
+                            ctx.strokeRect(sp.x, sp.y, width, height); // Draw each rectangle
+                            // });
+                            rectangles.forEach(rect => {
+                            ctx.strokeStyle = rect.color.hex;
+                            ctx.strokeRect(rect.x, rect.y, rect.width, rect.height); // Draw each rectangle
+                        });
+                        circles.forEach(circle=>{
+                            ctx.beginPath();
+                            ctx.arc(circle.x,circle.y,circle.radius,0,Math.PI*2)
+                            ctx.strokeStyle = circle.color.hex;
+                            ctx.stroke(); // Stroke the circle
+                        })
+                        
+                        // setimage(ctx.getImageData(0, 0, canvas.width, canvas.height));
+                    
             }
             else if (isCircle) {
                 setstartDrag(true)
-                 radius = Math.sqrt(Math.pow(currentX - sp.x, 2) + Math.pow(currentY - sp.y, 2));
-                 setisCirc(true)
+                radius = Math.sqrt(Math.pow(currentX - sp.x, 2) + Math.pow(currentY - sp.y, 2));
+                setisCirc(true)
                 ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
                 
                 if (image) {
@@ -171,6 +179,7 @@ const UseDraw = ({ color, socket, isEraser, lineWidth, text, isRectangle, isCirc
             else {
                 // Draw lines
                 // emitDrawData(socket, { prevX: prevPoints.x, prevY: prevPoints.y }, { currentX, currentY }, color.hex);
+
                 if(prevPoints.x!=null || prevPoints.y!=null){
 
                     console.log("dekh bhai yeh hai : ",prevPoints)

@@ -30,7 +30,7 @@ const Page = () => {
   const [socketsByRoom, setSocketsByRoom] = useState([]);
   const [alreadyDrawed, setalreadyDrawed] = useState(false);
   const [dim, setdim] = useState({});
-  const { rectangles, setrectangles, image, setimage, circles, setcircles } =
+  const { rectangles, setrectangles, image, setimage, circles, setcircles ,messages} =
     useDrawContext();
   const [nowWriting, setnowWriting] = useState(false);
 
@@ -46,6 +46,7 @@ const Page = () => {
     isCircle,
   });
   const { roomJoined, setRoomJoined } = useRoomContext();
+  
 
   useEffect(() => {
     // const newSocket = io("http://localhost:3001");
@@ -59,11 +60,11 @@ const Page = () => {
     if (ctx) {
       drawGrid(ctx, gridSize, gridColor, false);
     }
-
     newSocket.emit("client-ready", roomName);
     newSocket.on("sid", (sid) => {
       setId(sid);
       setSocketsByRoom((prevSockets) => [...prevSockets, sid]);
+      newSocket.emit('send-user',{sid,name})
     });
 
     newSocket.on("draw", (data) => {
@@ -83,6 +84,9 @@ const Page = () => {
       if (!ctx) return;
       ctx.fillText(data.text, data.x, data.y);
     });
+    newSocket.on('message',(data)=>{
+      console.log(data)
+    })
 
     newSocket.on("rectangle", (data) => {
       if (!ctx) return;
@@ -321,6 +325,9 @@ const Page = () => {
           />
         )}
       </div>
+      <div className="flex flex-col">
+
+      
       <div className="tools absolute top-4 left-4 flex flex-col gap-4 bg-toolBg p-4 rounded-md">
         <div className=" text-md text-white font-semibold">{`Room : ${roomName}`}</div>
         <div className="flex flex-col gap-2 w-32">
@@ -481,9 +488,13 @@ const Page = () => {
             <path d="M420-160v-520H200v-120h560v120H540v520H420Z" />
           </svg>
         </button>
-   
+            
+      </div > 
+      <div className="absolute top-3/4 left-4 flex flex-col gap-4">
+      <Chat socket={socket} roomName={roomName} id={id} />
+
       </div>
-    
+      </div>
     </div>
   );
 };

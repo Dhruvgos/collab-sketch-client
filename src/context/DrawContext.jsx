@@ -8,9 +8,10 @@ export const DrawProvider = ({ children }) => {
     const [rectangles, setrectangles] = useState([])
     const [circles, setcircles] = useState([])
     const [image, setimage] = useState(null)
+    const [messages, setMessages] = useState([]);
     // const [isrect, setisrect] = useState(false)
 
-  return(  <DrawContext.Provider value={{rectangles,setrectangles,image, setimage,circles, setcircles}}>
+  return(  <DrawContext.Provider value={{rectangles,setrectangles,image, setimage,circles, setcircles,messages, setMessages}}>
     {children}
 </DrawContext.Provider>)
 
