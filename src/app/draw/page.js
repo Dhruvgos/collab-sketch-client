@@ -399,7 +399,14 @@ const Page = () => {
       }-200 hover:bg-${isEraser ? "red" : "green"}-300 ${
         isEraser ? "border-2 border-gray-500" : ""
       }`}
-      onClick={() => setIsEraser(!isEraser)}
+      onClick={() => {
+        setIsEraser(!isEraser);
+                  if (!isEraser) {
+                    setisRectangle(false);
+                    setisCircle(false);
+                    setnowWriting(false)
+                  }
+                }}
     >
       {/* {isEraser ? "Disable Eraser" : "Enable Eraser"} */}
 
@@ -421,7 +428,14 @@ const Page = () => {
       }-200 hover:bg-${isRectangle ? "red" : "green"}-300 ${
         isRectangle ? "border-2 border-gray-500" : ""
       }`}
-      onClick={() => setisRectangle(!isRectangle)}
+      onClick={() => {
+        setisRectangle(!isRectangle);
+        if (!isRectangle) {
+          setisCircle(false);
+          setIsEraser(false);
+          setnowWriting(false)
+        }
+      }}
     >
       {/* {isRectangle ? "Disable Rect" : "Enable Rect"} */}
 
@@ -458,9 +472,20 @@ const Page = () => {
             )}
               </div>
             <div className="flex-1">
-            <button
-              onClick={() => setisCircle((prev) => !prev)}
-              className="btn text-white"
+            <button 
+              onClick={() => {
+                setisCircle(!isCircle);
+                if (!isCircle) {
+                  setisRectangle(false);
+                  setnowWriting(false)
+                  setIsEraser(false);
+                }
+              }}
+              className={`btn text-white btn-rect bg-${
+                isCircle ? "red" : "green"
+              }-200 hover:bg-${isCircle ? "red" : "green"}-300 ${
+                isCircle ? "border-2 border-gray-500" : ""
+              }`}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -475,8 +500,19 @@ const Page = () => {
           </div>
         </div>
         <button
-          onClick={() => setnowWriting((prev) => !prev)}
-          className="btn text-white"
+          onClick={() => {
+            setnowWriting(!nowWriting);
+            if (!nowWriting) {
+              setisRectangle(false);
+              setisCircle(false);
+              setIsEraser(false);
+            }
+          }}
+          className={`btn text-white btn-rect bg-${
+            nowWriting ? "red" : "green"
+          }-200 hover:bg-${nowWriting ? "red" : "green"}-300 ${
+            nowWriting ? "border-2 border-gray-500" : ""
+          }`}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

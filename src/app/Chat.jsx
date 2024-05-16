@@ -70,7 +70,7 @@ socket.on("get-messages", (data)=> {
               <div key={index} className="mb-2">
                 <div key={index} className={`flex ${m.id === id ? 'justify-end' : 'justify-start'}`}>
                   <p className='text-white bg-cyan-500 inline-flex flex-row rounded-lg p-2'>
-                    <span className="text-sm font-bold mr-1">{m.name}: </span>{m.text}
+                    <span className="text-sm font-bold mr-1">{m.id==id?"":`${m.name}:`} </span>{m.text}
                   </p>
                 </div>
               </div>
